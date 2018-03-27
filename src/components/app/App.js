@@ -1,4 +1,9 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+import CurrentNewStar from '../CurrentNewStar/CurrentNewStar';
+import StarList from '../StarList/StarList';
+import StarForm from '../StarForm/StarForm';
+
 
 class App extends Component {
   constructor(props) {
@@ -23,8 +28,8 @@ class App extends Component {
         diameter: 46
       }],
       newStar: {
-        name: 'Star Name',
-        diameter: 'Star Diameter'
+        name: '',
+        diameter: ''
       }
     };
 
@@ -41,29 +46,37 @@ class App extends Component {
   handleSubmit(event) {
     event.preventDefault();
     console.log(this.state.newStar);
-    this.setState({ starList:[...this.state.starList, this.state.newStar]})
-    this.setState({ newStar: {
-        name: '',
-        diameter: ''
-      }
+    this.setState({ 
+      starList:[ ...this.state.starList, this.state.newStar ],
+      newStar: { name: '', diameter: '' }
     })
   }
 
+  getPlanets() {
+    axios.get('https://swapi.co/api/planets/?format=json')
+      .then(response => {
+        console.log('response: ', response);
+        const planets = response.data.results;
+      })
+      .catch(error => {
+        console.log(error);
+      })
+  }
+
+  componentDidMount() {
+    console.log('Component has mounted');
+    this.getPlanets();
+  }
 
   render() {
 
     return (
       <div>
-        <form onSubmit={this.handleSubmit}>
-          <input value={this.state.newStar.name} onChange={this.handleChangeFor('name')}/>
-          <input value={this.state.newStar.diameter} onChange={this.handleChangeFor('diameter')}/>
-          <input type="submit" value="Submit"/>
-          {this.state.newStar.name} is {this.state.newStar.diameter} million km in diameter.
-        </form>
-        <ul>
-          {this.state.starList.map(star => (<li key={star.name}>
-          The star {star.name} is {star.diameter} million km in diameter.</li>))}
-        </ul>
+        <CurrentNewStar star={this.state.newStar}/>
+        <StarForm newStar={this.state.newStar} 
+        handleChangeFor={this.handleChangeFor} 
+        handleSubmit={this.handleSubmit}/>
+        <StarList starList={this.state.starList}/>
       </div>
     );
   }
